@@ -1,0 +1,1 @@
+Invoke-WebRequest -Uri "https://win.rustup.rs/x86_64" -OutFile "rustup-init.exe"; Start-Process -FilePath ".\rustup-init.exe" -ArgumentList "-y" -Wait -PassThru; echo "Rust installation completed" 
