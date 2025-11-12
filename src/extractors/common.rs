@@ -27,7 +27,7 @@ pub struct ExtractionError;
 pub type InternalExtractor = fn(&[u8], usize, Option<&str>) -> ExtractionResult;
 
 /// Enum to define either an Internal or External extractor type
-#[derive(Debug, Default, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Default, Clone)]
 pub enum ExtractorType {
     External(String),
     Internal(InternalExtractor),
@@ -35,8 +35,42 @@ pub enum ExtractorType {
     None,
 }
 
+// 手动实现PartialEq，避免直接比较函数指针
+impl PartialEq for ExtractorType {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (ExtractorType::External(s1), ExtractorType::External(s2)) => s1 == s2,
+            (ExtractorType::None, ExtractorType::None) => true,
+            // 对于Internal类型，我们只能判断它们都是Internal类型，而不比较函数指针本身
+            (ExtractorType::Internal(_), ExtractorType::Internal(_)) => false, // 函数指针不能安全比较
+            _ => false,
+        }
+    }
+}
+
+// 手动实现Eq
+impl Eq for ExtractorType {}
+
+// 手动实现PartialOrd
+impl PartialOrd for ExtractorType {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match (self, other) {
+            (ExtractorType::External(s1), ExtractorType::External(s2)) => s1.partial_cmp(s2),
+            (ExtractorType::None, ExtractorType::None) => Some(std::cmp::Ordering::Equal),
+            (ExtractorType::None, _) => Some(std::cmp::Ordering::Less),
+            (_, ExtractorType::None) => Some(std::cmp::Ordering::Greater),
+            (ExtractorType::External(_), ExtractorType::Internal(_)) => Some(std::cmp::Ordering::Less),
+            (ExtractorType::Internal(_), ExtractorType::External(_)) => Some(std::cmp::Ordering::Greater),
+            // 对于两个Internal类型，我们无法可靠地比较它们
+            (ExtractorType::Internal(_), ExtractorType::Internal(_)) => None,
+        }
+    }
+}
+
+// 由于无法为包含函数指针的类型实现完整的Ord，我们需要调整使用这个类型的地方
+
 /// Describes extractors, both external and internal
-#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd)]
 pub struct Extractor {
     /// External command or internal function to execute
     pub utility: ExtractorType,

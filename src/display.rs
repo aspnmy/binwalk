@@ -38,10 +38,18 @@ fn center_text(text: &str) -> String {
     let mut padding_width: i32;
     let mut centered_string: String = "".to_string();
 
-    match ((terminal_width() / 2) - (text.len() / 2)).try_into() {
-        Err(_e) => padding_width = 0,
-        Ok(value) => padding_width = value,
-    }
+    // 避免整数减法溢出，先检查text.len()/2是否小于terminal_width()/2
+    let terminal_half = terminal_width() / 2;
+    let text_half = text.len() / 2;
+    
+    // 使用饱和减法，确保结果不会为负数
+    let padding = if text_half <= terminal_half {
+        terminal_half - text_half
+    } else {
+        0
+    };
+    
+    padding_width = padding.try_into().unwrap_or(0);
 
     if padding_width < 0 {
         padding_width = 0;
@@ -60,10 +68,14 @@ fn pad_to_length(text: &str, len: usize) -> String {
     let mut pad_size: i32;
     let mut padded_string = String::from(text);
 
-    match (len - text.len()).try_into() {
-        Err(_e) => pad_size = 0,
-        Ok(value) => pad_size = value,
-    }
+    // 避免整数减法溢出，先检查len是否大于等于text.len()
+    let pad = if len >= text.len() {
+        len - text.len()
+    } else {
+        0
+    };
+    
+    pad_size = pad.try_into().unwrap_or(0);
 
     if pad_size < 0 {
         pad_size = 0;
