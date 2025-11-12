@@ -1,5 +1,0 @@
-基础教程：https://github.com/aspnmy/binwalk_for_Win_v3.git
-
-更新组件：https://github.com/aspnmy/binwalk_for_Win_v3/releases
-
-Debug提交：QQ群-115405294

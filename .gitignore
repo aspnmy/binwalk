@@ -1,2 +1,9 @@
 target/**
 builder/local_env/**
+
+builder/build-WinGui/dist/build/**
+builder/build-WinGui/dist/extractions/**
+**.spec
+builder/build-WinGui/dist/binwalk_gui.exe
+builder/build-WinGui/dist/binwalk.exe
+builder/build-WinGui/dist/Tests/**
