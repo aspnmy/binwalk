@@ -7,3 +7,5 @@ builder/build-WinGui/dist/extractions/**
 builder/build-WinGui/dist/binwalk_gui.exe
 builder/build-WinGui/dist/binwalk.exe
 builder/build-WinGui/dist/Tests/**
+
+.trae/**
