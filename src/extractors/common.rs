@@ -1007,10 +1007,26 @@ pub fn execute(
                             extractor_definition.clone(),
                         ) {
                             Err(e) => {
-                                error!(
-                                    "Failed to spawn external extractor for '{}' signature: {}",
-                                    signature.name, e
-                                );
+                                #[cfg(windows)]
+                                {
+                                    // 在Windows上提供更友好的错误信息
+                                    warn!(
+                                        "在Windows平台上找不到外部提取工具 '{}'，无法提取 '{}' 格式。请考虑安装对应的Windows版本工具或在Linux环境下使用完整功能。",
+                                        cmd, signature.name
+                                    );
+                                    debug!(
+                                        "详细错误信息: Failed to spawn external extractor for '{}' signature: {}",
+                                        signature.name, e
+                                    );
+                                }
+                                
+                                #[cfg(not(windows))]
+                                {
+                                    error!(
+                                        "Failed to spawn external extractor for '{}' signature: {}",
+                                        signature.name, e
+                                    );
+                                }
                             }
 
                             Ok(proc_info) => {
@@ -1121,7 +1137,29 @@ fn spawn(
     }
 
     info!("Spawning process {} {:?}", command, extractor.arguments);
-    match process::Command::new(&command)
+    
+    // 尝试在Windows上查找带.exe后缀的命令
+    #[cfg(windows)]
+    let cmd_to_use = {
+        // 首先尝试原始命令
+        if process::Command::new(&command).arg("--version").output().is_ok() {
+            command.clone()
+        } else {
+            // 然后尝试添加.exe后缀
+            let cmd_with_exe = format!("{}.exe", command);
+            if process::Command::new(&cmd_with_exe).arg("--version").output().is_ok() {
+                cmd_with_exe
+            } else {
+                command.clone() // 如果都失败，使用原始命令，让错误正常传播
+            }
+        }
+    };
+    
+    // 在非Windows平台上，直接使用原始命令
+    #[cfg(not(windows))]
+    let cmd_to_use = command.clone();
+    
+    match process::Command::new(&cmd_to_use)
         .args(&extractor.arguments)
         .stdout(process::Stdio::null())
         .stderr(process::Stdio::null())
@@ -1129,10 +1167,28 @@ fn spawn(
         .spawn()
     {
         Err(e) => {
-            error!(
-                "Failed to execute command {}{:?}: {}",
-                command, extractor.arguments, e
-            );
+            #[cfg(windows)]
+            {
+                // 在Windows上提供更具体的错误信息
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    warn!(
+                        "命令 '{}' 在Windows系统中未找到。在Windows平台上，部分提取功能可能受限。请考虑：\n1. 安装对应的Windows版本工具\n2. 在Linux环境中使用完整功能\n3. 检查PATH环境变量是否包含工具路径",
+                        cmd_to_use
+                    );
+                }
+                debug!(
+                    "Failed to execute command {}{:?}: {}",
+                    cmd_to_use, extractor.arguments, e
+                );
+            }
+            
+            #[cfg(not(windows))]
+            {
+                error!(
+                    "Failed to execute command {}{:?}: {}",
+                    cmd_to_use, extractor.arguments, e
+                );
+            }
             Err(e)
         }
 
