@@ -8,4 +8,7 @@ builder/build-WinGui/dist/binwalk_gui.exe
 builder/build-WinGui/dist/binwalk.exe
 builder/build-WinGui/dist/Tests/**
 
-.trae/**
+.trae/
+dependencies/binwalk-v2.3.4/
+
+builder/local_env/

@@ -21,7 +21,8 @@ fn terminal_width() -> usize {
         None => DEFAULT_TERMINAL_WIDTH,
     };
 
-    terminal_width as usize
+    // 确保返回的宽度至少为100，防止任何可能的整数溢出问题
+    (terminal_width as usize).max(100)
 }
 
 fn line_delimiter() -> String {
@@ -91,7 +92,9 @@ fn pad_to_length(text: &str, len: usize) -> String {
 fn line_wrap(text: &str, prefix_size: usize) -> String {
     let mut this_line = "".to_string();
     let mut formatted_string = "".to_string();
-    let max_line_size: usize = terminal_width() - prefix_size;
+    // 确保max_line_size有一个合理的最小值，防止整数溢出
+    // 即使prefix_size非常大，也确保至少有20个字符的可用空间
+    let max_line_size: usize = (terminal_width().max(100 + prefix_size) - prefix_size).max(20);
 
     for word in text.split_whitespace() {
         if (this_line.len() + word.len()) < max_line_size {

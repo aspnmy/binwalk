@@ -861,18 +861,35 @@ fn init_extraction_directory(
     }
     #[cfg(windows)]
     {
+        // 尝试创建硬链接
         match std::fs::hard_link(target_path, link_path) {
             Ok(_) => {
                 return Ok(link_target_path_str);
             }
             Err(e) => {
-                error!(
+                warn!(
                     "Failed to create hardlink {} -> {}: {}",
                     link_path.display(),
                     target_path.display(),
                     e
                 );
-                return Err(e);
+                info!("Falling back to file copy as alternative for Windows platform");
+                
+                // 如果硬链接失败，回退到复制文件
+                match std::fs::copy(target_path, link_path) {
+                    Ok(_) => {
+                        return Ok(link_target_path_str);
+                    }
+                    Err(e2) => {
+                        error!(
+                            "Failed to copy file {} -> {}: {}",
+                            link_path.display(),
+                            target_path.display(),
+                            e2
+                        );
+                        return Err(e2);
+                    }
+                }
             }
         }
     }

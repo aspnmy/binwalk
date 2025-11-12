@@ -27,7 +27,7 @@ binwalk图形界面主类
     root: tkinter的根窗口对象
         """
         self.root = root
-        self.root.title("Binwalk GUI - 公版固件BIn分析工具 v3.1.1 for devWin By support@e2bank.cn - https://github.com/aspnmy/binwalk_for_Win_v3.git")
+        self.root.title("Binwalk GUI - 公版固件BIn分析工具 v3.1.1-rc2 修复了Win系统中无法解压squashfs文件的问题 for devWin By support@e2bank.cn - https://github.com/aspnmy/binwalk_for_Win_v3.git")
         self.root.geometry("900x700")
         self.root.resizable(True, True)
         
@@ -55,6 +55,14 @@ binwalk图形界面主类
         
         # 使用可执行文件所在目录的相对路径查找binwalk.exe
         self.binwalk_path = os.path.join(base_dir, "binwalk.exe")
+        
+        # 设置sqfs_for_win路径，确保在编译后能正确找到
+        self.sqfs_for_win_path = os.path.join(base_dir, "sqfs_for_win")
+        
+        # 确保环境变量中包含sqfs_for_win路径
+        if os.path.exists(self.sqfs_for_win_path):
+            os.environ['PATH'] = self.sqfs_for_win_path + ';' + os.environ['PATH']
+            print(f"[+] 已添加sqfs_for_win路径到环境变量: {self.sqfs_for_win_path}")
         
         # 创建界面组件
         self.create_widgets()

@@ -827,20 +827,35 @@ impl Chroot {
         }
         #[cfg(windows)]
         {
-            // let sym = match safe_target_path.is_dir() {
-            //     true => windows::fs::symlink_dir(safe_target_path, safe_symlink_path),
-            //     false => windows::fs::symlink_file(safe_target_path, safe_symlink_path),
-            // };
+            // 第一个方案：根据目标类型创建正确的符号链接
+            let sym_result = match safe_target_path.is_dir() {
+                true => windows::fs::symlink_dir(safe_target_path, safe_symlink_path),
+                false => windows::fs::symlink_file(safe_target_path, safe_symlink_path),
+            };
 
-            match windows::fs::symlink_dir(safe_target_path, safe_symlink_path) {
+            if sym_result.is_ok() {
+                return true;
+            }
+
+            // 第二个方案：尝试创建硬链接
+            match std::fs::hard_link(&safe_target, &safe_symlink) {
                 Ok(_) => {
+                    warn!("创建符号链接失败，已创建硬链接作为替代: {} -> {}", symlink, target);
                     return true;
                 }
-                Err(e) => {
-                    error!(
-                        "Failed to create symlink from {} -> {}: {}",
-                        symlink, target, e
-                    );
+                Err(_) => {
+                    // 忽略硬链接错误，继续尝试复制文件
+                }
+            }
+
+            // 第三个保底方案：复制文件
+            match std::fs::copy(&safe_target, &safe_symlink) {
+                Ok(_) => {
+                    warn!("创建符号链接和硬链接失败，已复制文件作为替代: {} -> {}", symlink, target);
+                    return true;
+                }
+                Err(copy_err) => {
+                    error!("创建符号链接、硬链接和复制文件都失败: {}", copy_err);
                     return false;
                 }
             }

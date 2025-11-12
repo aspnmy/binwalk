@@ -30,8 +30,8 @@ def clean_build_files(dry_run=False):
             'build',          # PyInstaller构建目录
             'dist',           # PyInstaller输出目录
             'extractions',    # 提取的文件目录
-            'sqfs_for_win',   # SquashFS相关临时目录
-            'Tests',          # 测试目录
+            
+            
         ],
         'files': [
             'binwalk_gui.spec',  # PyInstaller规格文件
@@ -52,7 +52,10 @@ def clean_build_files(dry_run=False):
         'clean_build.py',     # 当前清理脚本
         'binwalk_gui.py',     # 主程序源文件
         'build_gui.py',       # 构建脚本
+        'sqfs_for_win',   # SquashFS第三方依赖组件
+        'devROM.jpg',
         '如何更新最新组件及基础教程.txt',  # 教程文件
+        'Tests',          # 测试目录
     ]
     
     deleted_count = 0

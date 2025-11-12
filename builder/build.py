@@ -894,6 +894,7 @@ def copy_external_components(build_dir):
     """
     复制外部组件到构建输出目录的sqfs_for_win子目录
     特别确保包含LZMA压缩支持的squashfs工具被正确复制
+    同时复制*.7z文件到build-WinGui\dist\sqfs_for_win目录和Tests文件到build-WinGui\dist目录
     
     参数:
         build_dir (str): 构建输出目录路径
@@ -903,15 +904,23 @@ def copy_external_components(build_dir):
     """
     print("=== 复制外部组件 ===")
     
+    # 获取脚本所在目录
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    
     # 定义外部组件源目录
     sqfs_source_dir = get_normalized_path(os.path.join(PROJECT_ROOT, 'dependencies', 'sqfs_for_win'))
     
     # 定义目标目录为build_dir下的sqfs_for_win子目录
     sqfs_target_dir = get_normalized_path(os.path.join(build_dir, 'sqfs_for_win'))
     
+    # 定义build-WinGui\dist目录路径
+    build_win_gui_dist_dir = get_normalized_path(os.path.join(SCRIPT_DIR, 'build-WinGui', 'dist'))
+    build_win_gui_sqfs_dir = get_normalized_path(os.path.join(build_win_gui_dist_dir, 'sqfs_for_win'))
+    
     # 关键工具列表，确保这些工具被复制（尤其是支持LZMA的squashfs工具）
     critical_tools = ['unsquashfs.exe', 'mksquashfs.exe']
     tools_found = 0
+    seven_zip_files_copied = 0
     
     if not os.path.exists(sqfs_source_dir):
         print(f"警告: 未找到外部组件目录: {sqfs_source_dir}")
@@ -937,6 +946,15 @@ def copy_external_components(build_dir):
                 # 检查关键工具是否已复制
                 if item.lower() in [tool.lower() for tool in critical_tools]:
                     tools_found += 1
+                
+                # 复制*.7z文件到build-WinGui\dist\sqfs_for_win目录
+                if item.lower().endswith('.7z'):
+                    # 确保build-WinGui\dist\sqfs_for_win目录存在
+                    os.makedirs(build_win_gui_sqfs_dir, exist_ok=True)
+                    win_gui_target_path = os.path.join(build_win_gui_sqfs_dir, item)
+                    shutil.copy2(source_path, win_gui_target_path)
+                    print(f"✅ 已复制7z文件到: {win_gui_target_path}")
+                    seven_zip_files_copied += 1
             elif os.path.isdir(source_path):
                 # 如果是子目录，也复制
                 if os.path.exists(target_path):
@@ -951,7 +969,26 @@ def copy_external_components(build_dir):
             print("请确保使用的squashfs工具支持LZMA压缩格式")
         else:
             print(f"✅ 所有关键squashfs工具已成功复制，确保支持LZMA压缩格式")
+        
+        # 复制Tests目录到build-WinGui\dist目录
+        tests_source_dir = get_normalized_path(os.path.join(PROJECT_ROOT, 'dependencies', 'Tests'))
+        tests_target_dir = get_normalized_path(os.path.join(build_win_gui_dist_dir, 'Tests'))
+        
+        if os.path.exists(tests_source_dir):
+            # 确保目标目录存在
+            os.makedirs(build_win_gui_dist_dir, exist_ok=True)
             
+            # 如果目标目录已存在，先删除
+            if os.path.exists(tests_target_dir):
+                shutil.rmtree(tests_target_dir)
+            
+            # 复制Tests目录
+            shutil.copytree(tests_source_dir, tests_target_dir)
+            print(f"✅ 已复制Tests目录到: {tests_target_dir}")
+        else:
+            print(f"⚠️  警告: 未找到Tests目录: {tests_source_dir}")
+        
+        print(f"✅ 已复制 {seven_zip_files_copied} 个.7z文件到build-WinGui\dist\sqfs_for_win目录")
         print("外部组件复制完成！")
         return True
     except Exception as e:
