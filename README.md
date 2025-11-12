@@ -1,7 +1,16 @@
 # Fix
-可直接下载 v3.1.1-rc2-devWin版本，目前在Win系统中重构使用7-zip与LZMA本身的API实现了解压业务
+- 修复Win版本不能完美squashfs解压缩问题，本地需要WSL2 环境、docker环境或者qemu环境。
+- 下载 binwalk-devWin-v3.1.1-r4版本 ，解压后，首先运行Install.exe程序，安装本地Wsl/Wsl2环境(需要bios支持)，
+- 然后完成安装后再运行binwalk_gui.exe文件就能用WinGUI文件正常解包squashfs文件了，原理就是再wsl环境中运行binwalk-docker版本，但是docker的虚拟宿主文件夹受binwalk_gui.exe文件夹管理，可以上传bin文件，解包后下载解包后的文件。
+- 本地设备没有wsl环境如何处理：运行Install.exe程序的时候，跳出提示，安装dockerdesktop版本、还是wsl版本，能用wsl用wsl，不能用可以选择dockerdesktop版本，这些都(需要bios支持)，如果bios确实不支持的，选择安装qemu虚拟机版本，qemu版本会本地安装一个最小linux内核，一般装kali系统的命令行版或者是alnple或者是openart系统，运行成功以后，运行binwalk-linux版本，如下图：
+<img width="1021" height="538" alt="企业微信截图_17629427072192" src="https://github.com/user-attachments/assets/580718b4-fbca-40b5-bf38-61083599e637" />
+
+- 可直接下载 v3.1.1-rc2-devWin版本，目前在Win系统中重构使用7-zip与LZMA本身的API实现了解压业务
 <img width="1093" height="368" alt="企业微信截图_1762937594774" src="https://github.com/user-attachments/assets/0c933a85-442a-4e98-8473-49dcecb477aa" />
 
+- binwalk-v3.1.1-rc2-devWin 和binwalk-devWin-v3.1.1-r4版本 在windows下运行实现的业务路径是不一样的：
+- binwalk-devWin-v3.1.1-r4更完美但是体积更大，并且可以和源项目保持更新；
+- binwalk-v3.1.1-rc2-devWin使用其他组件完成业务，体积比较小，但是兼容性较差，短期内不进行更新
 
 # Binwalk v3
 
