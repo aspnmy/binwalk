@@ -1,0 +1,18 @@
+services:
+    binwalkv3:
+        stdin_open: true
+        tty: true
+        volumes:
+            - binwalkv3:/analysis
+        entrypoint:
+            - /bin/bash
+        deploy:
+            resources:
+                limits:
+                    memory: 4g
+                    cpus: 2
+        image: refirmlabs/binwalk:latest
+        
+
+volumes:
+  binwalkv3:
