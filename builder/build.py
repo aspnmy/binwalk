@@ -890,6 +890,74 @@ target = "{target_triple}"
             return False
 
 
+def copy_external_components(build_dir):
+    """
+    复制外部组件到构建输出目录的sqfs_for_win子目录
+    特别确保包含LZMA压缩支持的squashfs工具被正确复制
+    
+    参数:
+        build_dir (str): 构建输出目录路径
+    
+    返回:
+        bool: 复制是否成功
+    """
+    print("=== 复制外部组件 ===")
+    
+    # 定义外部组件源目录
+    sqfs_source_dir = get_normalized_path(os.path.join(PROJECT_ROOT, 'dependencies', 'sqfs_for_win'))
+    
+    # 定义目标目录为build_dir下的sqfs_for_win子目录
+    sqfs_target_dir = get_normalized_path(os.path.join(build_dir, 'sqfs_for_win'))
+    
+    # 关键工具列表，确保这些工具被复制（尤其是支持LZMA的squashfs工具）
+    critical_tools = ['unsquashfs.exe', 'mksquashfs.exe']
+    tools_found = 0
+    
+    if not os.path.exists(sqfs_source_dir):
+        print(f"警告: 未找到外部组件目录: {sqfs_source_dir}")
+        return False
+    
+    try:
+        # 复制sqfs_for_win目录下的所有文件到构建输出目录的sqfs_for_win子目录
+        print(f"正在从 {sqfs_source_dir} 复制文件到 {sqfs_target_dir}")
+        
+        # 确保目标目录存在
+        os.makedirs(sqfs_target_dir, exist_ok=True)
+        
+        # 遍历源目录中的所有文件
+        for item in os.listdir(sqfs_source_dir):
+            source_path = os.path.join(sqfs_source_dir, item)
+            target_path = os.path.join(sqfs_target_dir, item)
+            
+            # 复制文件
+            if os.path.isfile(source_path):
+                shutil.copy2(source_path, target_path)
+                print(f"✅ 已复制: sqfs_for_win\\{item}")
+                
+                # 检查关键工具是否已复制
+                if item.lower() in [tool.lower() for tool in critical_tools]:
+                    tools_found += 1
+            elif os.path.isdir(source_path):
+                # 如果是子目录，也复制
+                if os.path.exists(target_path):
+                    shutil.rmtree(target_path)
+                shutil.copytree(source_path, target_path)
+                print(f"✅ 已复制目录: sqfs_for_win\\{item}")
+        
+        # 检查是否所有关键工具都已复制
+        if tools_found < len(critical_tools):
+            print(f"⚠️  警告: 未找到所有关键squashfs工具。期望的工具: {', '.join(critical_tools)}")
+            print(f"已找到的工具数量: {tools_found}")
+            print("请确保使用的squashfs工具支持LZMA压缩格式")
+        else:
+            print(f"✅ 所有关键squashfs工具已成功复制，确保支持LZMA压缩格式")
+            
+        print("外部组件复制完成！")
+        return True
+    except Exception as e:
+        print(f"❌ 复制外部组件时出错: {e}")
+        return False
+
 def build_project(env):
     """
     构建项目，确保使用本地环境
@@ -974,6 +1042,14 @@ def build_project(env):
         if process.returncode == 0:
             print("----------------------------------------")
             print("\n构建成功！")
+            
+            # 获取目标三元组以确定构建输出目录
+            target_triple = setup_gnu_toolchain()[0]  # 调用函数获取目标三元组
+            build_dir = os.path.join(PROJECT_ROOT, 'target', target_triple, 'debug')
+            
+            # 复制外部组件到构建输出目录
+            copy_external_components(build_dir)
+            
             return True
         else:
             print("----------------------------------------")
@@ -1065,8 +1141,9 @@ def main():
         print(f"构建输出目录: {build_dir}")
         print("\n使用说明:")
         print(f"1. 构建的可执行文件位于: {build_dir}")
-        print("2. 所有构建依赖都隔离在 builder/local_env 目录中")
-        print("3. 要清理构建环境，删除 builder/local_env 目录即可")
+        print(f"2. 外部组件（unsquashfs.exe等）已复制到构建输出目录")
+        print("3. 所有构建依赖都隔离在 builder/local_env 目录中")
+        print("4. 要清理构建环境，删除 builder/local_env 目录即可")
     else:
         print("❌ 构建失败！")
         # 提供详细的排查建议
