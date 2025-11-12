@@ -667,9 +667,10 @@ def install_rust():
             print(f"下载rustup-init.exe到: {RUSTUP_EXE}")
             download_file(RUSTUP_URL, RUSTUP_EXE)
         
-        # 静默安装，指定GNU工具链作为默认工具链
+        # 静默安装，强制使用GNU工具链，不安装MSVC工具链
         # 使用绝对路径确保在任何工作目录下都能正确执行
-        cmd = [RUSTUP_EXE, '-y', '--default-toolchain', 'stable-x86_64-pc-windows-gnu', '--profile', 'minimal']
+        # --default-host参数强制使用GNU目标架构，避免安装MSVC工具链
+        cmd = [RUSTUP_EXE, '-y', '--default-toolchain', 'stable-x86_64-pc-windows-gnu', '--default-host', 'x86_64-pc-windows-gnu', '--profile', 'minimal']
         print(f"执行安装命令: {' '.join(cmd)}")
         
         # 使用指定的环境变量运行命令，不继承系统PATH
