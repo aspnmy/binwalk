@@ -1,3 +1,8 @@
+# Fix
+可直接下载 v3.1.1-rc2-devWin版本，目前在Win系统中重构使用7-zip与LZMA本身的API实现了解压业务
+<img width="1093" height="368" alt="企业微信截图_1762937594774" src="https://github.com/user-attachments/assets/0c933a85-442a-4e98-8473-49dcecb477aa" />
+
+
 # Binwalk v3
 
 这是 Binwalk 固件分析工具的更新版本，使用 Rust 重写以提高速度和准确性。
