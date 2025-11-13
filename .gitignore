@@ -12,3 +12,12 @@ builder/build-WinGui/dist/Tests/**
 dependencies/binwalk-v2.3.4/
 
 builder/local_env/
+**/*.logs
+**/*.log
+**/**.pyc
+*.pyc
+
+# autotests
+**/autotests/**
+test_*.py
+*.cpython-313.pyc

@@ -6,13 +6,13 @@ A Rust implementation of the Binwalk firmware analysis tool.
 
 Building requires the following system packages:
 
-```
+```bash
 build-essential libfontconfig1-dev liblzma-dev
 ```
 
 ## Example
 
-```
+```rust
 use binwalk::Binwalk;
 
 // Create a new Binwalk instance

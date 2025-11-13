@@ -1,0 +1,27 @@
+# podman :/run/podman/podman.sock ${socket_path}
+# docker :/var/run/docker.sock ${socket_path}
+# portainerEE：ghcr.io/aspnmy/portainer-ee:2.34.0-alpine ${image_tag}
+# portainerCE：portainer/portainer-ce:lts ${image_tag}
+services:
+    v100-portainer-ee-v2340-alpine-sts:
+        ports:
+            # https
+            - 11866:9443
+            # Api
+            - 11862:8000
+            # http
+            - 11868:9000
+            
+        container_name: v100-portainer-ee-v2340-alpine-sts
+        restart: always
+        privileged: true
+        user: 0:0
+        volumes:
+            - ${socket_path}:/var/run/docker.sock
+            - portainerEE_data:/data
+
+        image: ${image_tag}
+volumes:
+    portainerEE_data:
+        external:
+            name: portainerEE_data

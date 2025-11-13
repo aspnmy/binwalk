@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+# 用于获得本机外网实际IP及IP所属区域
+CURRENT_DIR=$(cd "$(dirname "$0")" || exit; pwd) # 当前脚本所在目录
+PARENT_DIR=$(dirname "$CURRENT_DIR") # 当前脚本所在目录的上级目录
+OFFLine_IP_DIR=${PARENT_DIR}/ipdata/ipinfo_lite.json # 离线IP归属库
+
+
+
+get_localIP(){
+    local localIP=$(curl -s https://checkip.amazonaws.com/)
+    echo $localIP
+}
+# 可以复用的全局变量
+myIP=$(get_localIP)
+
+get_myIPCountryOnline(){
+# 国内接口获取ip
+# 发送请求并提取 IP 地址
+
+local external_ip_api="https://api.ipinfo.io/lite/$myIP?token=b8f46943d26f45"
+local truecountry
+truecountry=$(curl -s  $external_ip_api)
+    if [ -z "$truecountry" ]; then
+        echo "未知地区。"
+    else
+        #echo "外网 IP 地址: $external_ip"
+        #echo "$truecountry"
+        echo $truecountry > ${CURRENT_DIR}/local_host
+    fi
+
+}
+
+get_myHostIp_OfflineIp(){
+    # 如果远程api不存在则查询离线数据库ip所属
+    truecountry=cat ${OFFLine_IP_DIR} | jq -r ".[] | select(.ip == \"$myIP\") | .country_code"
+    if [ -z "$truecountry" ]; then
+        echo "未知地区。"
+    else
+        #echo "外网 IP 地址: $external_ip"
+        #echo "$truecountry"
+        echo $truecountry > ${CURRENT_DIR}/local_host
+    fi
+}
+
+
+get_myHostIp_init(){
+    # 首先查询ip在远程数据库中是否存在ip所属
+    # 如果远程api不存在则查询离线数据库ip所属
+    get_myIPCountryOnline
+    # if [ "$?" -ne 0 ]; then
+    #     get_myHostIp_OfflineIp
+    # fi
+
+}
+
+main(){
+    get_myHostIp_init
+}
+
+main

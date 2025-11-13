@@ -1,0 +1,23 @@
+# podman :/run/podman/podman.sock ${socket_path}
+# docker :/var/run/docker.sock ${socket_path}
+services:
+    agent:
+        volumes:
+            - ${socket_path}:/var/run/docker.sock
+            - /www/share/portainer/agent:/var/lib/docker/volumes
+            - /:/host
+            - portainer_agent_data:/data
+        restart: always
+        environment:
+            - EDGE=1
+            - EDGE_ID=$PORTAINER_EDGE_ID
+            - EDGE_KEY=aHR0cHM6Ly9wb3J0YWluZXIudDJiZS5jbnxwb3J0YWluZXIudDJiZS5jbjo4MDAwfEpwdGVTYnoxMGJNS2taNGVTdlAyL1REYXNjdmxsWDBBcmdyQzdkcm9CZms9fDA
+            - EDGE_INSECURE_POLL=1
+            - PORTAINER_TAGS=2:4
+        container_name: portainer_edge_agent
+        image: docker.io/portainer/agent:2.19.5
+volumes:
+    portainer_agent_data:
+        external:
+            name: portainer_agent_data
+  
