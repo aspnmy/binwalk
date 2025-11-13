@@ -48,20 +48,24 @@ def run_powershell_command(command, admin=False, wait=True):
         tuple: (返回码, 输出内容) 如果wait=True，否则返回(None, None)
     """
     if admin:
-        # 以管理员权限重新运行PowerShell
-        cmd = f'powershell -Command "Start-Process powershell -ArgumentList \"-NoExit -Command {command}\" -Verb RunAs"'
+        # 以管理员权限重新运行PowerShell，正确格式化参数列表
+        cmd = f'powershell -Command "Start-Process powershell -ArgumentList \'-NoExit -Command {command}\' -Verb RunAs"'
     else:
         cmd = f'powershell -Command "{command}"'
     
     print(f"[+] 执行命令: {cmd}")
     
-    if wait:
-        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        stdout, stderr = process.communicate()
-        return process.returncode, stdout + stderr
-    else:
-        subprocess.Popen(cmd, shell=True)
-        return None, None
+    try:
+        if wait:
+            process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            stdout, stderr = process.communicate()
+            return process.returncode, stdout + stderr
+        else:
+            subprocess.Popen(cmd, shell=True)
+            return None, None
+    except Exception as e:
+        print(f"[-] 执行命令时出错: {str(e)}")
+        return -1, str(e)
 
 def check_windows_version():
     """
@@ -73,14 +77,32 @@ def check_windows_version():
     try:
         # 获取Windows版本信息
         win_version = platform.win32_ver()
-        build_number = int(platform.win32_ver()[2].split('.')[2]) if len(platform.win32_ver()[2].split('.')) > 2 else 0
+        version_str = win_version[0]
+        version_detail = win_version[1]
         
-        print(f"[+] Windows版本: {win_version[0]} {win_version[1]} 构建 {build_number}")
+        # 更安全地解析构建号
+        build_number = 0
+        try:
+            # 尝试从version_detail中获取构建号（Windows 10/11格式通常为10.0.xxxxx）
+            if '.' in version_detail:
+                parts = version_detail.split('.')
+                if len(parts) >= 3:
+                    build_number = int(parts[2])
+        except (ValueError, IndexError):
+            # 如果解析失败，默认为0
+            build_number = 0
+        
+        print(f"[+] Windows版本: {version_str} {version_detail} 构建 {build_number}")
         
         # Windows 10 1903以上或Windows 11支持WSL2
-        supports_wsl2 = (win_version[0] == '10' and build_number >= 18362) or (win_version[0] == '11')
+        # 对于Windows 11，直接认为支持WSL2
+        supports_wsl2 = False
+        if version_str == '11':
+            supports_wsl2 = True
+        elif version_str == '10' and build_number >= 18362:
+            supports_wsl2 = True
         
-        return supports_wsl2, f"Windows {win_version[0]} {win_version[1]} Build {build_number}"
+        return supports_wsl2, f"Windows {version_str} {version_detail} Build {build_number}"
     except Exception as e:
         print(f"[-] 检查Windows版本时出错: {e}")
         return False, f"未知系统: {str(e)}"
@@ -277,73 +299,87 @@ def main():
     返回:
         int: 退出代码
     """
-    print("=" * 60)
-    print("        WSL2/WSL环境安装脚本")
-    print("        用于配置Kali Linux和Docker环境")
-    print("=" * 60)
-    
-    # 检查是否以管理员权限运行
-    if not is_admin():
-        print("[-] 请以管理员权限运行此脚本！")
-        # 尝试以管理员权限重新运行
-        print("[+] 尝试以管理员权限重新运行...")
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit(1)
-    
-    # 解析命令行参数
-    parser = argparse.ArgumentParser(description='WSL2环境安装脚本')
-    parser.add_argument('--wsl1', action='store_true', help='强制使用WSL1模式')
-    args = parser.parse_args()
-    
-    # 检查Windows版本
-    supports_wsl2, os_info = check_windows_version()
-    print(f"[+] 系统信息: {os_info}")
-    
-    # 如果强制使用WSL1或者系统不支持WSL2，则使用WSL1
-    use_wsl2 = supports_wsl2 and not args.wsl1
-    print(f"[+] 将使用WSL{2 if use_wsl2 else 1}")
-    
-    # 启用WSL功能
-    if not enable_wsl_features():
-        print("[-] 启用WSL功能失败，安装无法继续")
+    try:
+        print("=" * 60)
+        print("        WSL2/WSL环境安装脚本")
+        print("        用于配置Kali Linux和Docker环境")
+        print("=" * 60)
+        
+        # 检查是否以管理员权限运行
+        if not is_admin():
+            print("[-] 请以管理员权限运行此脚本！")
+            # 尝试以管理员权限重新运行
+            print("[+] 尝试以管理员权限重新运行...")
+            try:
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            except Exception as e:
+                print(f"[-] 无法以管理员权限重新运行: {str(e)}")
+            sys.exit(1)
+        
+        # 解析命令行参数
+        parser = argparse.ArgumentParser(description='WSL2环境安装脚本')
+        parser.add_argument('--wsl1', action='store_true', help='强制使用WSL1模式')
+        args = parser.parse_args()
+        
+        # 检查Windows版本
+        supports_wsl2, os_info = check_windows_version()
+        print(f"[+] 系统信息: {os_info}")
+        
+        # 如果强制使用WSL1或者系统不支持WSL2，则使用WSL1
+        use_wsl2 = supports_wsl2 and not args.wsl1
+        print(f"[+] 将使用WSL{2 if use_wsl2 else 1}")
+        
+        # 启用WSL功能
+        if not enable_wsl_features():
+            print("[-] 启用WSL功能失败，安装无法继续")
+            return 1
+        
+        # 设置WSL版本
+        if use_wsl2:
+            set_wsl_default_version(2)
+        else:
+            set_wsl_default_version(1)
+        
+        # 安装Kali Linux
+        if not install_kali_linux():
+            print("[-] 安装Kali Linux失败，安装无法继续")
+            return 1
+        
+        print("[+] 初始化Kali Linux中...")
+        print("[!] 请在弹出的Kali Linux窗口中设置用户名和密码")
+        print("[!] 设置完成后关闭Kali Linux窗口继续安装")
+        
+        # 启动Kali Linux进行初始化
+        run_powershell_command("wsl -d kali-linux", wait=False)
+        
+        # 等待用户完成Kali初始化
+        print("[+] 等待Kali Linux初始化完成...")
+        input("[+] 完成Kali Linux初始化后按任意键继续...")
+        
+        # 配置Kali Linux，安装Docker
+        if not configure_kali_linux():
+            print("[-] 配置Kali Linux失败，但将继续安装其他组件")
+        
+        # 拉取binwalk Docker镜像
+        pull_binwalk_docker_image()
+        
+        # 创建binwalk Docker卷
+        create_binwalk_volume()
+        
+        # 安装完成
+        setup_completion()
+        
+        return 0
+    except KeyboardInterrupt:
+        print("\n[-] 安装过程被用户中断")
         return 1
-    
-    # 设置WSL版本
-    if use_wsl2:
-        set_wsl_default_version(2)
-    else:
-        set_wsl_default_version(1)
-    
-    # 安装Kali Linux
-    if not install_kali_linux():
-        print("[-] 安装Kali Linux失败，安装无法继续")
+    except Exception as e:
+        import traceback
+        print(f"\n[-] 发生未预期的错误: {str(e)}")
+        print("\n详细错误信息:")
+        traceback.print_exc()
+        input("\n按任意键退出...")
         return 1
-    
-    print("[+] 初始化Kali Linux中...")
-    print("[!] 请在弹出的Kali Linux窗口中设置用户名和密码")
-    print("[!] 设置完成后关闭Kali Linux窗口继续安装")
-    
-    # 启动Kali Linux进行初始化
-    run_powershell_command("wsl -d kali-linux", wait=False)
-    
-    # 等待用户完成Kali初始化
-    print("[+] 等待Kali Linux初始化完成...")
-    input("[+] 完成Kali Linux初始化后按任意键继续...")
-    
-    # 配置Kali Linux，安装Docker
-    if not configure_kali_linux():
-        print("[-] 配置Kali Linux失败，但将继续安装其他组件")
-    
-    # 拉取binwalk Docker镜像
-    pull_binwalk_docker_image()
-    
-    # 创建binwalk Docker卷
-    create_binwalk_volume()
-    
-    # 安装完成
-    setup_completion()
-    
-    return 0
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -1,0 +1,40 @@
+2025-11-13 16:33:36,558 - INFO - ===== WSL2/WSL环境安装脚本开始执行 =====
+2025-11-13 16:33:36,589 - INFO - 检查管理员权限...
+2025-11-13 16:33:36,594 - DEBUG - 检查管理员权限...
+2025-11-13 16:33:36,618 - DEBUG - 管理员权限检查结果: 1
+2025-11-13 16:33:36,618 - INFO - 已确认管理员权限
+2025-11-13 16:33:36,618 - INFO - 解析命令行参数...
+2025-11-13 16:33:36,638 - DEBUG - 命令行参数: Namespace(wsl1=False)
+2025-11-13 16:33:36,638 - INFO - 检查Windows版本兼容性...
+2025-11-13 16:33:36,639 - INFO - 检查Windows版本...
+2025-11-13 16:33:36,803 - DEBUG - 原始Windows版本信息: ('11', '10.0.26100', 'SP0', 'Multiprocessor Free')
+2025-11-13 16:33:36,806 - DEBUG - 版本字符串: SP0
+2025-11-13 16:33:36,807 - DEBUG - 版本部分: ['SP0']
+2025-11-13 16:33:36,807 - WARNING - 无法从版本字符串 'SP0' 解析构建号
+2025-11-13 16:33:36,807 - INFO - Windows版本: 11 10.0.26100 构建 0
+2025-11-13 16:33:36,807 - INFO - 是否支持WSL2: True
+2025-11-13 16:33:36,808 - INFO - 系统信息: Windows 11 10.0.26100 Build 0
+2025-11-13 16:33:36,808 - INFO - 将使用WSL2
+2025-11-13 16:33:36,808 - INFO - 开始启用WSL功能...
+2025-11-13 16:33:36,809 - INFO - 启用WSL和虚拟机平台功能...
+2025-11-13 16:33:36,809 - INFO - 启用WSL功能...
+2025-11-13 16:33:36,810 - INFO - 执行命令: powershell -Command "Start-Process powershell -ArgumentList "-NoExit -Command dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart" -Verb RunAs"
+2025-11-13 16:33:38,997 - DEBUG - 命令返回码: 1
+2025-11-13 16:33:38,998 - DEBUG - 命令输出: Start-Process : 找不到与参数名称“Command”匹配的参数。
+所在位置 行:1 字符: 48
++ Start-Process powershell -ArgumentList -NoExit -Command dism.exe /onl ...
++                                                ~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [Start-Process]，ParameterBindingException
+    + FullyQualifiedErrorId : NamedParameterNotFound,Microsoft.PowerShell.Commands.StartProcessCommand
+ 
+
+2025-11-13 16:33:39,048 - ERROR - 启用WSL功能失败: Start-Process : 找不到与参数名称“Command”匹配的参数。
+所在位置 行:1 字符: 48
++ Start-Process powershell -ArgumentList -NoExit -Command dism.exe /onl ...
++                                                ~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [Start-Process]，ParameterBindingException
+    + FullyQualifiedErrorId : NamedParameterNotFound,Microsoft.PowerShell.Commands.StartProcessCommand
+ 
+
+2025-11-13 16:33:39,051 - ERROR - 启用WSL功能失败，安装无法继续
+2025-11-13 16:33:39,052 - INFO - ===== WSL2/WSL环境安装脚本执行结束 =====
