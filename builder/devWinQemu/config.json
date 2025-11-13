@@ -1,0 +1,11 @@
+{
+    "qemu_path": "u:\\git\\binwalk\\builder\\devWinQemu\\qemu",
+    "kali_image_path": "u:\\git\\binwalk\\builder\\devWinQemu\\images\\kali-linux.qcow2",
+    "ssh_host": "localhost",
+    "ssh_port": 2222,
+    "ssh_user": "kali",
+    "ssh_password": "kali",
+    "memory_mb": 4096,
+    "cpu_cores": 2,
+    "docker_compose_path": "u:\\git\\binwalk\\builder\\devWinQemu\\docker-compose.yml"
+}

@@ -1,0 +1,16 @@
+
+version: '3'
+services:
+  binwalkv3:
+    image: refirmlabs/binwalk:latest
+    stdin_open: true
+    tty: true
+    mem_limit: 4g
+    cpus: 2
+    volumes:
+      - binwalkv3:/analysis
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+volumes:
+  binwalkv3:

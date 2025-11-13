@@ -1,0 +1,10 @@
+{
+    "ssh_host": "localhost",
+    "ssh_port": 2222,
+    "ssh_user": "kali",
+    "ssh_password": "kali",
+    "remote_working_dir": "/analysis",
+    "docker_compose_path": "docker-compose.yml",
+    "local_temp_dir": "u:\\git\\binwalk\\builder\\devWinQemu\\temp",
+    "log_level": "INFO"
+}

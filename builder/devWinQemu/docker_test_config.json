@@ -1,0 +1,25 @@
+{
+    "docker_compose_path": "u:\\git\\binwalk\\builder\\devWinQemu\\docker-compose.yml",
+    "container_name": "binwalkv3",
+    "image_name": "refirmlabs/binwalk:latest",
+    "volumes": [
+        {
+            "name": "binwalkv3",
+            "path": "/analysis"
+        }
+    ],
+    "ports": [
+        {
+            "host": 8080,
+            "container": 8080
+        },
+        {
+            "host": 8081,
+            "container": 8081
+        }
+    ],
+    "resources": {
+        "memory_limit": "4g",
+        "cpus": 2
+    }
+}
