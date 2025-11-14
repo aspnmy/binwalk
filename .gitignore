@@ -21,3 +21,6 @@ builder/local_env/
 **/autotests/**
 test_*.py
 *.cpython-313.pyc
+
+# 容器仓库配置文件
+registerConfig.json

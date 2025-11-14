@@ -13,6 +13,15 @@ import socket
 import time
 import logging
 
+# 导入网关域名管理模块
+try:
+    from gateway_manager import get_download_gateway
+    GATEWAY_AVAILABLE = True
+except ImportError:
+    GATEWAY_AVAILABLE = False
+    def get_download_gateway():
+        return "gateway.cf.shdrr.org"
+
 logger = logging.getLogger(__name__)
 
 def get_external_ip():
@@ -284,7 +293,7 @@ def check_network_environment():
         'ip': None,
         'country': 'UNKNOWN',
         'use_mirror': False,
-        'gateway_url': 'https://gateway.cf.shdrr.org',
+        'gateway_url': f'https://{get_download_gateway()}',
         'test_results': {}
     }
     
@@ -366,7 +375,7 @@ def get_smart_url(original_url, network_info):
         return original_url
     
     if network_info.get('use_mirror', False):
-        gateway_url = network_info.get('gateway_url', 'https://gateway.cf.shdrr.org')
+        gateway_url = network_info.get('gateway_url', f'https://{get_download_gateway()}')
         # 构建镜像URL
         mirror_url = f"{gateway_url}/{original_url}"
         logger.info(f"使用镜像源: {mirror_url}")

@@ -1,0 +1,26 @@
+{
+  "wsl_distro": "win11",
+  "wsl_usr": "devman",
+  "wsl_pwd": "devman",
+  "wsl_devpath": "$HOME/git_data/${gitbranch}",
+  "container_ports": {
+    "rdp": 4489,
+    "http": 4818,
+    "vnc": 4777
+  },
+  "environment_variables": {
+    "DOWNLOAD_GATEWAY": "gateway.cf.shdrr.org",
+    "DOCKERIMAGE_GATEWAY": "drrpull.shdrr.org"
+  },
+  "build_tools": [
+    "buildah",
+    "git", 
+    "curl",
+    "wget",
+    "portainerEE"
+  ],
+  "gateway_files": [
+    "download-gateway",
+    "dockerimage-gateway"
+  ]
+}

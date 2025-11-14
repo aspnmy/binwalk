@@ -13,6 +13,7 @@ true-install-wsl2-debug.py
 true-binwalk_GUi.py
 true-check_ip_location.py
 true-checkTrueLocalHost
+gateway_manager.py
 
 ## [临时生成]
 # 临时生成的文件，使用temp-前缀
@@ -26,3 +27,4 @@ test_import.py
 test_ip_detection.py
 test_logging.py
 test_run_powershell.py
+autotest_gateway_domains.py

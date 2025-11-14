@@ -25,6 +25,18 @@ import re
 import logging
 from datetime import datetime
 
+# 导入网关域名管理模块
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+try:
+    from gateway_manager import get_download_gateway, get_dockerimage_gateway
+    GATEWAY_AVAILABLE = True
+except ImportError:
+    GATEWAY_AVAILABLE = False
+    def get_download_gateway():
+        return "gateway.cf.shdrr.org"
+    def get_dockerimage_gateway():
+        return "drrpull.shdrr.org"
+
 # 导入IP检测模块
 try:
     from check_ip_location import check_network_environment, get_smart_url
@@ -428,13 +440,16 @@ def update_container_config(container_tool, network_info=None):
     # 尝试拉取最新配置
     latest_mirrors = fetch_latest_docker_config(network_info)
     
+    # 获取网关域名
+    dockerimage_gateway = get_dockerimage_gateway()
+    
     config_data = {
         "bip": "172.17.0.1/24",
         "log-level": "warn",
         "iptables": True,
         "api-cors-header": "*",
         "registry-mirrors": latest_mirrors if latest_mirrors else [
-            "https://drrpull.shdrr.org",
+            f"https://{dockerimage_gateway}",
             "https://docker.shdrr.org", 
             "https://docker.1panelproxy.com"
         ]
@@ -484,12 +499,14 @@ EOF
         sudo chmod 644 /etc/containers/containers.conf
         
         # 创建registry配置文件
+        dockerimage_gateway = get_dockerimage_gateway()
+        
         cat > /tmp/registries.conf << 'EOF'
 [[registry]]
 prefix = "docker.io"
 location = "docker.io"
 [[registry.mirror]]
-location = "https://drrpull.shdrr.org"
+location = "https://{dockerimage_gateway}"
 [[registry.mirror]]
 location = "https://docker.shdrr.org"
 [[registry.mirror]]
