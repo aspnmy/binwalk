@@ -1,3 +1,18 @@
+# Add
+```
+docker push ghcr.io/aspnmy/binwalk:v3.1.0_s6.ssh_imagemagick
+```
+
+- 新增v3.1.0_s6.ssh_imagemagick版本，内置
+- ImageMagick：图像处理工具
+- foremost：文件恢复工具
+- hexedit：十六进制编辑器
+- gimp：图像编辑软件
+- binutils：二进制工具集
+- mtd-utils：闪存设备工具
+- Python3 和 python3-pip：Python 运行时和包管理工具
+方便进行定向功能逆向
+
 # Fix
 - 修复Win版本不能完美squashfs解压缩问题，本地需要WSL2 环境、docker环境或者qemu环境。
 - 下载 binwalk-devWin-v3.1.1-r4版本 ，解压后，首先运行Install.exe程序，安装本地Wsl/Wsl2环境(需要bios支持)，
