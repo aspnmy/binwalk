@@ -1,6 +1,6 @@
 # Add
 ```
-docker push ghcr.io/aspnmy/binwalk:v3.1.0_s6.ssh_imagemagick
+docker pull ghcr.io/aspnmy/binwalk:v3.1.0_s6.ssh_imagemagick
 ```
 
 - 新增v3.1.0_s6.ssh_imagemagick版本，内置
